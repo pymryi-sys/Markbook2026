@@ -64,6 +64,13 @@
     color:var(--navy-600);
     letter-spacing:0.02em;
   }
+  .eyebrow .semester{
+    display:block;
+    margin-top:3px;
+    font-size:0.72rem;
+    color:var(--slate-500);
+    letter-spacing:0.02em;
+  }
 
   .divider{
     width:56px;
@@ -346,12 +353,13 @@
   <div class="eyebrow">
     <span class="th">โรงเรียนสาธิตมหาวิทยาลัยขอนแก่น ฝ่ายมัธยมศึกษา</span>
     <span class="en">KKU Demonstration School — Secondary Division</span>
-    <span class="course">อ33101 ภาษาอังกฤษพื้นฐาน 5 · E33101 Fundamental English 5 — 1st Semester, Academic Year 2026–2027</span>
+    <span class="course">อ33101 ภาษาอังกฤษพื้นฐาน 5 · E33101 Fundamental English 5</span>
+    <span class="semester">ภาคเรียนที่ 1 ปีการศึกษา 2569 · 1st Semester, Academic Year 2026–2027</span>
   </div>
   <div class="divider"></div>
 
   <h1>Markbook</h1>
-  <p class="subtitle">Enter your 6-digit Student ID to view your test and assignment results.</p>
+  <p class="subtitle">Enter your 6-digit Student ID to view your test and assignment scores.</p>
 
   <div id="sampleBanner" class="sample-banner" style="display:none;">
     Showing sample data for preview. Upload a <code>scores.csv</code> file next to this page to go live.
@@ -606,6 +614,10 @@ async function handleSubmit(){
   }
 }
 
+function isNumericScore(value){
+  return /^-?\d+(\.\d+)?$/.test((value ?? '').toString().trim());
+}
+
 function renderStudent(row){
   const { identity, assessments } = analyzeRow(row);
 
@@ -624,7 +636,7 @@ function renderStudent(row){
   }
 
   for (const item of assessments) {
-    const graded = item.score !== '';
+    const graded = isNumericScore(item.score);
     const tr = document.createElement('tr');
     tr.innerHTML = `
       <td class="col-name">${escapeHtml(item.name)}</td>
