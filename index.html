@@ -640,6 +640,641 @@ function renderStudent(row){
     const tr = document.createElement('tr');
     tr.innerHTML = `
       <td class="col-name">${escapeHtml(item.name)}</td>
+      <td class="col-score">${item.score !== '' ? escapeHtml(item.score) : '—'}</td>
+      <td class="col-status">
+        <span class="pill ${graded ? 'graded' : 'pending'}">${graded ? 'Graded' : 'Pending'}</span>
+      </td>`;
+    tbody.appendChild(tr);
+  }
+}
+
+function escapeHtml(str){
+  const div = document.createElement('div');
+  div.textContent = str;
+  return div.innerHTML;
+}
+
+document.getElementById('resetBtn').addEventListener('click', () => {
+  otpBoxes.forEach(b => { b.value = ''; b.classList.remove('filled'); });
+  otpBoxes[0].focus();
+  resultsSection.classList.remove('visible');
+  statusMsg.textContent = '';
+  refreshSubmitState();
+});
+
+submitBtn.addEventListener('click', handleSubmit);
+
+loadRows().then(() => {
+  if (usingSampleData) sampleBanner.style.display = 'block';
+});
+</script>
+</body>
+</html>
+  body{
+    min-height:100vh;
+    display:flex;
+    justify-content:center;
+    padding: 48px 20px 80px;
+  }
+
+  main{
+    width:100%;
+    max-width:680px;
+  }
+
+  .eyebrow{
+    text-align:center;
+    font-size:0.8rem;
+    letter-spacing:0.04em;
+    color:var(--slate-500);
+    margin-bottom:14px;
+  }
+
+  .eyebrow .th{ display:block; }
+  .eyebrow .en{ display:block; margin-top:2px; }
+  .eyebrow .course{
+    display:block;
+    margin-top:10px;
+    font-size:0.75rem;
+    color:var(--navy-600);
+    letter-spacing:0.02em;
+  }
+  .eyebrow .semester{
+    display:block;
+    margin-top:3px;
+    font-size:0.72rem;
+    color:var(--slate-500);
+    letter-spacing:0.02em;
+  }
+
+  .divider{
+    width:56px;
+    height:3px;
+    background:var(--gold-500);
+    border-radius:2px;
+    margin:0 auto 28px;
+  }
+
+  h1{
+    font-family:'Fraunces', serif;
+    font-weight:600;
+    font-size:2rem;
+    text-align:center;
+    margin:0 0 8px;
+    color:var(--navy-950);
+  }
+
+  .subtitle{
+    text-align:center;
+    color:var(--slate-500);
+    font-size:0.98rem;
+    margin:0 0 36px;
+    line-height:1.5;
+  }
+
+  .card{
+    background:var(--white);
+    border-radius:var(--radius);
+    box-shadow:var(--shadow);
+    padding:32px;
+    margin-bottom:20px;
+  }
+
+  .card-label{
+    font-size:0.85rem;
+    font-weight:600;
+    color:var(--navy-600);
+    text-align:center;
+    margin-bottom:18px;
+  }
+
+  .otp-row{
+    display:flex;
+    justify-content:center;
+    gap:10px;
+    margin-bottom:24px;
+  }
+
+  .otp-box{
+    width:46px;
+    height:56px;
+    text-align:center;
+    font-family:'IBM Plex Mono', monospace;
+    font-size:1.4rem;
+    font-weight:600;
+    color:var(--navy-950);
+    border:2px solid var(--slate-200);
+    border-radius:10px;
+    background:var(--paper);
+    transition:border-color 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
+  }
+
+  .otp-box:focus-visible{
+    outline:none;
+    border-color:var(--gold-500);
+    box-shadow:0 0 0 3px var(--gold-100);
+    background:var(--white);
+  }
+
+  .otp-box.filled{ border-color:var(--navy-600); background:var(--white); }
+
+  .submit-row{ display:flex; justify-content:center; }
+
+  button{
+    font-family:'Sarabun', sans-serif;
+    font-weight:600;
+    font-size:0.98rem;
+    cursor:pointer;
+    border:none;
+    border-radius:999px;
+    transition:background 0.15s ease, transform 0.1s ease;
+  }
+
+  button:focus-visible{
+    outline:3px solid var(--gold-100);
+    outline-offset:2px;
+  }
+
+  .btn-primary{
+    background:var(--navy-800);
+    color:var(--white);
+    padding:13px 34px;
+  }
+
+  .btn-primary:hover{ background:var(--navy-950); }
+  .btn-primary:active{ transform:translateY(1px); }
+
+  .btn-primary:disabled{
+    background:var(--slate-200);
+    color:var(--slate-500);
+    cursor:not-allowed;
+  }
+
+  .btn-secondary{
+    background:transparent;
+    color:var(--navy-600);
+    padding:10px 18px;
+    border:1.5px solid var(--slate-200);
+  }
+
+  .btn-secondary:hover{ border-color:var(--navy-600); }
+
+  .status-msg{
+    text-align:center;
+    font-size:0.92rem;
+    margin-top:16px;
+    line-height:1.5;
+  }
+
+  .status-msg.error{ color:#a33b3b; }
+  .status-msg.info{ color:var(--slate-500); }
+
+  #resultsSection{
+    display:none;
+  }
+
+  #resultsSection.visible{
+    display:block;
+    animation: fadeIn 0.35s ease;
+  }
+
+  @keyframes fadeIn{
+    from{ opacity:0; transform:translateY(6px); }
+    to{ opacity:1; transform:translateY(0); }
+  }
+
+  .student-card{
+    background:var(--white);
+    border-radius:var(--radius);
+    box-shadow:var(--shadow);
+    border-left:4px solid var(--gold-500);
+    padding:22px 26px;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    flex-wrap:wrap;
+    gap:12px;
+    margin-bottom:18px;
+  }
+
+  .student-name{
+    font-family:'Fraunces', serif;
+    font-weight:600;
+    font-size:1.3rem;
+    color:var(--navy-950);
+  }
+
+  .student-meta{
+    font-size:0.88rem;
+    color:var(--slate-500);
+    margin-top:4px;
+  }
+
+  .student-id-chip{
+    font-family:'IBM Plex Mono', monospace;
+    font-weight:600;
+    font-size:0.95rem;
+    background:var(--navy-800);
+    color:var(--white);
+    padding:8px 14px;
+    border-radius:8px;
+    letter-spacing:0.03em;
+  }
+
+  .table-card{
+    background:var(--white);
+    border-radius:var(--radius);
+    box-shadow:var(--shadow);
+    overflow:hidden;
+    margin-bottom:20px;
+  }
+
+  table{
+    width:100%;
+    border-collapse:collapse;
+  }
+
+  thead th{
+    background:var(--navy-800);
+    color:var(--white);
+    text-align:left;
+    font-size:0.8rem;
+    letter-spacing:0.03em;
+    text-transform:uppercase;
+    padding:14px 20px;
+    font-weight:600;
+  }
+
+  thead th.col-score, thead th.col-status{ text-align:right; }
+
+  tbody td{
+    padding:15px 20px;
+    font-size:0.95rem;
+    border-bottom:1px solid var(--paper);
+  }
+
+  tbody tr:last-child td{ border-bottom:none; }
+  tbody tr:hover td{ background:var(--paper); }
+
+  td.col-name{ color:var(--navy-950); }
+
+  td.col-score{
+    font-family:'IBM Plex Mono', monospace;
+    font-weight:600;
+    text-align:right;
+    font-variant-numeric: tabular-nums;
+  }
+
+  td.col-status{ text-align:right; }
+
+  .pill{
+    display:inline-flex;
+    align-items:center;
+    gap:6px;
+    font-size:0.78rem;
+    font-weight:600;
+    padding:4px 11px;
+    border-radius:999px;
+  }
+
+  .pill::before{
+    content:'';
+    width:7px;
+    height:7px;
+    border-radius:50%;
+  }
+
+  .pill.graded{ background:var(--green-100); color:var(--green-700); }
+  .pill.graded::before{ background:var(--green-700); }
+
+  .pill.pending{ background:var(--paper); color:var(--slate-500); border:1px solid var(--slate-200); }
+  .pill.pending::before{ background:var(--slate-500); }
+
+  .footer-row{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    flex-wrap:wrap;
+    gap:10px;
+    font-size:0.82rem;
+    color:var(--slate-500);
+  }
+
+  .sample-banner{
+    background:var(--gold-100);
+    color:#7a5b1e;
+    border-radius:10px;
+    padding:12px 18px;
+    font-size:0.85rem;
+    text-align:center;
+    margin-bottom:20px;
+    line-height:1.5;
+  }
+
+  @media (max-width:420px){
+    .card{ padding:24px 18px; }
+    .otp-box{ width:38px; height:50px; font-size:1.15rem; }
+    .otp-row{ gap:7px; }
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    *{ animation:none !important; transition:none !important; }
+  }
+</style>
+</head>
+<body>
+
+<main>
+  <div class="eyebrow">
+    <span class="th">โรงเรียนสาธิตมหาวิทยาลัยขอนแก่น ฝ่ายมัธยมศึกษา</span>
+    <span class="en">KKU Demonstration School — Secondary Division</span>
+    <span class="course">อ33101 ภาษาอังกฤษพื้นฐาน 5 · E33101 Fundamental English 5</span>
+    <span class="semester">ภาคเรียนที่ 1 ปีการศึกษา 2569 · 1st Semester, Academic Year 2026–2027</span>
+  </div>
+  <div class="divider"></div>
+
+  <h1>Markbook</h1>
+  <p class="subtitle">Enter your 6-digit Student ID to view your test and assignment scores.</p>
+
+  <div id="sampleBanner" class="sample-banner" style="display:none;">
+    Showing sample data for preview. Upload a <code>scores.csv</code> file next to this page to go live.
+  </div>
+
+  <section class="card">
+    <div class="card-label">STUDENT ID</div>
+    <div class="otp-row" id="otpRow">
+      <input class="otp-box" type="text" inputmode="numeric" pattern="[0-9]*" maxlength="1" aria-label="Digit 1">
+      <input class="otp-box" type="text" inputmode="numeric" pattern="[0-9]*" maxlength="1" aria-label="Digit 2">
+      <input class="otp-box" type="text" inputmode="numeric" pattern="[0-9]*" maxlength="1" aria-label="Digit 3">
+      <input class="otp-box" type="text" inputmode="numeric" pattern="[0-9]*" maxlength="1" aria-label="Digit 4">
+      <input class="otp-box" type="text" inputmode="numeric" pattern="[0-9]*" maxlength="1" aria-label="Digit 5">
+      <input class="otp-box" type="text" inputmode="numeric" pattern="[0-9]*" maxlength="1" aria-label="Digit 6">
+    </div>
+    <div class="submit-row">
+      <button class="btn-primary" id="submitBtn" disabled>View Scores</button>
+    </div>
+    <div class="status-msg" id="statusMsg" aria-live="polite"></div>
+  </section>
+
+  <section id="resultsSection">
+    <div class="student-card">
+      <div>
+        <div class="student-name" id="studentName">—</div>
+        <div class="student-meta" id="studentMeta">—</div>
+      </div>
+      <div class="student-id-chip" id="studentIdChip">—</div>
+    </div>
+
+    <div class="table-card">
+      <table>
+        <thead>
+          <tr>
+            <th class="col-name">Assessment</th>
+            <th class="col-score">Score (%)</th>
+            <th class="col-status">Status</th>
+          </tr>
+        </thead>
+        <tbody id="scoresBody"></tbody>
+      </table>
+    </div>
+
+    <div class="footer-row">
+      <span id="syncedAt"></span>
+      <button class="btn-secondary" id="resetBtn">Search another ID</button>
+    </div>
+  </section>
+</main>
+
+<script>
+/* ============================================================
+   CONFIG — data comes from a CSV file sitting next to this HTML
+   ============================================================
+   1. In Google Sheets: File → Download → Comma Separated Values (.csv)
+   2. Rename the downloaded file to match csvFile below EXACTLY
+      (case-sensitive): scores.csv
+   3. Upload/commit scores.csv into the SAME folder as this HTML
+      file (see the GitHub Pages instructions provided separately).
+   The Google Sheet itself never needs to be shared or made public —
+   only the exported CSV file goes live.
+   If scores.csv isn't found yet, the page falls back to the
+   embedded sample data below so you can preview it right away.
+============================================================ */
+const CONFIG = {
+  csvFile: 'scores.csv'
+};
+
+/* ============================================================
+   EXPECTED CSV SHAPE — one row per student:
+
+   Class,No.,Student ID,Name,Last Name,<Assessment 1>,<Assessment 2>,...
+
+   - The first five columns are fixed "identity" columns. Minor
+     differences in header spelling/punctuation (e.g. "No" vs "No.")
+     are handled automatically.
+   - Every column after that is treated as one test/assignment.
+     The column header (English or Thai) becomes the row label in
+     the results table, and the cell becomes the score. Leave a
+     cell blank until it's graded — it will show as "Pending".
+   - To add a new test/assignment later, add a new column in Google
+     Sheets, then re-export and re-upload scores.csv. No changes to
+     this file are ever needed.
+   - Whenever grades update: re-export the CSV from Google Sheets
+     and upload it with the same filename to overwrite the old one.
+     The page always reads whatever scores.csv currently contains.
+============================================================ */
+
+const SAMPLE_DATA = [
+  {
+    'Class': 'M.6/0', 'No.': '0', 'Student ID': '674000', 'Name': 'John', 'Last Name': 'Doe',
+    'SWOT Analysis': '85', 'Résumé Writing': '78', 'Error Identification Test': '90',
+    'Prefix & Vocabulary Quiz': '', 'แบบทดสอบคำศัพท์ (Vocabulary Test)': '88'
+  },
+  {
+    'Class': 'M.6/0', 'No.': '1', 'Student ID': '674001', 'Name': 'สมชาย', 'Last Name': 'ใจดี',
+    'SWOT Analysis': '91', 'Résumé Writing': '', 'Error Identification Test': '83',
+    'Prefix & Vocabulary Quiz': '76', 'แบบทดสอบคำศัพท์ (Vocabulary Test)': '95'
+  },
+  {
+    'Class': 'M.6/1', 'No.': '5', 'Student ID': '674105', 'Name': 'Emily', 'Last Name': 'Carter',
+    'SWOT Analysis': '88', 'Résumé Writing': '82', 'Error Identification Test': '',
+    'Prefix & Vocabulary Quiz': '80', 'แบบทดสอบคำศัพท์ (Vocabulary Test)': ''
+  }
+];
+
+let usingSampleData = false;
+
+/* ---------- data access ---------- */
+
+let cachedRows = null;
+
+async function loadRows(){
+  if (cachedRows) return cachedRows;
+
+  try {
+    // cache: 'no-store' avoids the browser showing a stale copy of
+    // scores.csv right after you've uploaded a fresh one.
+    const res = await fetch(CONFIG.csvFile, { cache: 'no-store' });
+    if (!res.ok) throw new Error('csv-not-found');
+
+    const csvText = await res.text();
+    const parsed = Papa.parse(csvText, { header: true, skipEmptyLines: true });
+    cachedRows = parsed.data;
+    usingSampleData = false;
+  } catch (err) {
+    // scores.csv hasn't been uploaded next to this file yet —
+    // fall back to the embedded sample so the page still works.
+    console.warn(`${CONFIG.csvFile} not found — showing sample data instead.`);
+    cachedRows = SAMPLE_DATA;
+    usingSampleData = true;
+  }
+
+  return cachedRows;
+}
+
+function normalizeKey(key){
+  return (key || '').toLowerCase().replace(/[^a-z]/g, '');
+}
+
+function analyzeRow(row){
+  const identity = { class: '', no: '', studentId: '', name: '', lastName: '' };
+  const assessments = [];
+
+  for (const [rawKey, rawValue] of Object.entries(row)) {
+    const key = (rawKey || '').trim();
+    if (!key) continue;
+    const nk = normalizeKey(key);
+    const value = (rawValue ?? '').toString().trim();
+
+    if (nk === 'class') identity.class = value;
+    else if (nk === 'no') identity.no = value;
+    else if (nk === 'studentid' || nk === 'id') identity.studentId = value;
+    else if (nk === 'name' || nk === 'firstname') identity.name = value;
+    else if (nk === 'lastname') identity.lastName = value;
+    else assessments.push({ name: key, score: value });
+  }
+
+  return { identity, assessments };
+}
+
+function findStudentRow(rows, targetId){
+  const target = targetId.trim();
+  return rows.find(row => {
+    const { identity } = analyzeRow(row);
+    if (!identity.studentId) return false;
+    return identity.studentId === target || identity.studentId.padStart(6, '0') === target;
+  });
+}
+
+/* ---------- OTP-style ID input ---------- */
+
+const otpBoxes = Array.from(document.getElementById('otpRow').querySelectorAll('.otp-box'));
+const submitBtn = document.getElementById('submitBtn');
+const statusMsg = document.getElementById('statusMsg');
+
+function currentId(){
+  return otpBoxes.map(b => b.value).join('');
+}
+
+function refreshSubmitState(){
+  const id = currentId();
+  submitBtn.disabled = id.length !== 6 || !/^\d{6}$/.test(id);
+}
+
+otpBoxes.forEach((box, i) => {
+  box.addEventListener('input', () => {
+    box.value = box.value.replace(/[^0-9]/g, '').slice(0, 1);
+    box.classList.toggle('filled', box.value !== '');
+    if (box.value && i < otpBoxes.length - 1) otpBoxes[i + 1].focus();
+    refreshSubmitState();
+  });
+
+  box.addEventListener('keydown', (e) => {
+    if (e.key === 'Backspace' && !box.value && i > 0) {
+      otpBoxes[i - 1].focus();
+    }
+    if (e.key === 'Enter' && !submitBtn.disabled) {
+      handleSubmit();
+    }
+  });
+
+  box.addEventListener('paste', (e) => {
+    e.preventDefault();
+    const digits = (e.clipboardData.getData('text') || '').replace(/[^0-9]/g, '').slice(0, 6);
+    digits.split('').forEach((d, idx) => {
+      if (otpBoxes[idx]) {
+        otpBoxes[idx].value = d;
+        otpBoxes[idx].classList.add('filled');
+      }
+    });
+    const next = otpBoxes[Math.min(digits.length, 5)];
+    if (next) next.focus();
+    refreshSubmitState();
+  });
+});
+
+/* ---------- search + render ---------- */
+
+const resultsSection = document.getElementById('resultsSection');
+const sampleBanner = document.getElementById('sampleBanner');
+
+async function handleSubmit(){
+  const id = currentId();
+  if (id.length !== 6) return;
+
+  submitBtn.disabled = true;
+  statusMsg.className = 'status-msg info';
+  statusMsg.textContent = 'Looking up your scores…';
+  resultsSection.classList.remove('visible');
+
+  try {
+    const rows = await loadRows();
+    const row = findStudentRow(rows, id);
+
+    if (!row) {
+      statusMsg.className = 'status-msg error';
+      statusMsg.textContent = `No record found for ID ${id}. Please check the number and try again.`;
+      refreshSubmitState();
+      return;
+    }
+
+    renderStudent(row);
+    statusMsg.textContent = '';
+    sampleBanner.style.display = usingSampleData ? 'block' : 'none';
+    resultsSection.classList.add('visible');
+    document.getElementById('syncedAt').textContent = `Last synced: ${new Date().toLocaleString()}`;
+  } catch (err) {
+    statusMsg.className = 'status-msg error';
+    statusMsg.textContent = "Something went wrong reading the score data. Please try again in a moment.";
+    refreshSubmitState();
+  }
+}
+
+function isNumericScore(value){
+  return /^-?\d+(\.\d+)?$/.test((value ?? '').toString().trim());
+}
+
+function renderStudent(row){
+  const { identity, assessments } = analyzeRow(row);
+
+  document.getElementById('studentName').textContent =
+    [identity.name, identity.lastName].filter(Boolean).join(' ') || '—';
+  document.getElementById('studentMeta').textContent =
+    `Class ${identity.class || '—'} · No. ${identity.no || '—'}`;
+  document.getElementById('studentIdChip').textContent = `ID ${identity.studentId}`;
+
+  const tbody = document.getElementById('scoresBody');
+  tbody.innerHTML = '';
+
+  if (assessments.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="3" style="text-align:center; color:var(--slate-500);">No tests or assignments have been added yet.</td></tr>`;
+    return;
+  }
+
+  for (const item of assessments) {
+    const graded = isNumericScore(item.score);
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td class="col-name">${escapeHtml(item.name)}</td>
       <td class="col-score">${graded ? escapeHtml(item.score) : '—'}</td>
       <td class="col-status">
         <span class="pill ${graded ? 'graded' : 'pending'}">${graded ? 'Graded' : 'Pending'}</span>
